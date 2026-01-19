@@ -88,8 +88,12 @@ private var appRouteKey: UInt8 = 0
 
 private extension UIViewController {
     var appRoute: AppRoute? {
-        get { objc_getAssociatedObject(self, &appRouteKey) as? AppRoute }
-        set { objc_setAssociatedObject(self, &appRouteKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get {
+            objc_getAssociatedObject(self, &appRouteKey) as? AppRoute
+        }
+        set {
+            objc_setAssociatedObject(self, &appRouteKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
     }
 
     /// fluent: vc.tagged(.movieList)
