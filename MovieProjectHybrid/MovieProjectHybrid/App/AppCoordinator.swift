@@ -62,8 +62,10 @@ final class AppCoordinator: NSObject, NavigationCoordinator {
     private func applyNavigationBarStyle(for route: AppRoute, animated: Bool) {
         let hidden: Bool
         switch navBarStyle(route) {
-        case .visible: hidden = false
-        case .hidden:  hidden = true
+        case .visible:
+            hidden = false
+        case .hidden:
+            hidden = true
         }
         navigationController.setNavigationBarHidden(hidden, animated: animated)
     }
@@ -77,7 +79,10 @@ extension AppCoordinator: UINavigationControllerDelegate {
         willShow viewController: UIViewController,
         animated: Bool
     ) {
-        guard let route = viewController.appRoute else { return }
+        guard let route = viewController.appRoute else {
+            return
+        }
+
         applyNavigationBarStyle(for: route, animated: animated)
     }
 }
