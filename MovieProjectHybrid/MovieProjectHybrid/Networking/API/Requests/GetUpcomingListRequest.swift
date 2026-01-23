@@ -20,8 +20,12 @@ struct GetUpcomingListRequest: APIRequest {
     var queryParameters: [URLQueryItem] {
         [
             URLQueryItem(name: "api_key", value: Environment.apiKey),
-            URLQueryItem(name: "page", value: "\(page ?? .zero)")
+            URLQueryItem(name: "page", value: "\(page)")
         ]
     }
-    var page: Int!
+    let page: Int
+
+    init(page: Int) {
+        self.page = page
+    }
 }

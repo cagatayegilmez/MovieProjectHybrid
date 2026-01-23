@@ -15,14 +15,19 @@ struct GetSimilarMoviesRequest: APIRequest {
     var baseUrl: URL = Environment.rootURL
     let method: HTTPMethodType = .get
     var path: String {
-        "movie/\(String(describing: movieId))/similar"
+        "movie/\(movieId)/similar"
     }
     var queryParameters: [URLQueryItem] {
         [
             URLQueryItem(name: "api_key", value: Environment.apiKey),
-            URLQueryItem(name: "page", value: "\(String(describing: page))")
+            URLQueryItem(name: "page", value: "\(page)")
         ]
     }
-    var movieId: Int!
-    var page: Int!
+    let movieId: Int
+    let page: Int
+
+    init(movieId: Int, page: Int) {
+        self.movieId = movieId
+        self.page = page
+    }
 }

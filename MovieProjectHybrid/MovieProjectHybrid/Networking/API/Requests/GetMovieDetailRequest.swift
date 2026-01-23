@@ -15,10 +15,14 @@ struct GetMovieDetailRequest: APIRequest {
     var baseUrl: URL = Environment.rootURL
     let method: HTTPMethodType = .get
     var path: String {
-        "movie/\(String(describing: movieId ?? 0))"
+        "movie/\(movieId)"
     }
     var queryParameters: [URLQueryItem] {
         [URLQueryItem(name: "api_key", value: Environment.apiKey)]
     }
-    var movieId: Int!
+    let movieId: Int
+
+    init(movieId: Int) {
+        self.movieId = movieId
+    }
 }

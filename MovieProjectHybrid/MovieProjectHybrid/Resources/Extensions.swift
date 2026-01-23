@@ -44,7 +44,15 @@ final class NavigationController: UINavigationController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupBackButton()
+        updateAppearance(for: traitCollection)
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateAppearance(for: traitCollection)
+    }
+
+    private func updateAppearance(for traitCollection: UITraitCollection) {
         switch traitCollection.userInterfaceStyle {
         case .light, .unspecified:
             isLightMode = true
@@ -53,16 +61,17 @@ final class NavigationController: UINavigationController {
         @unknown default:
             isLightMode = true
         }
+        setupBackButton()
     }
 
-    func setupBackButton() {
+    private func setupBackButton() {
         navigationBar.tintColor = isLightMode ? .black : .white
         navigationBar.backItem?.title = ""
         navigationBar.topItem?.title = " "
         navigationBar.isTranslucent = true
         navigationBar.backgroundColor = isLightMode ? .white : .black
         navigationBar.shadowImage = UIImage()
-        navigationBar.largeTitleTextAttributes = [.foregroundColor: isLightMode ? UIColor.white : UIColor.black]
+        navigationBar.largeTitleTextAttributes = [.foregroundColor: isLightMode ? UIColor.black : UIColor.white]
         navigationBar.titleTextAttributes = [
             .foregroundColor: UIColor(hex: "#2B2D42"),
             .font: UIFont.systemFont(ofSize: 15)
@@ -74,9 +83,9 @@ final class NavigationController: UINavigationController {
         negativeSpacer.width = -5
         let backButton = UIBarButtonItem(image: #imageLiteral(resourceName: "back"),
                                          style: .plain,
-                                         target: target,
+                                         target: self,
                                          action: #selector(backButtonAction))
-        topViewController?.navigationItem.setLeftBarButtonItems([backButton], animated: false)
+        topViewController?.navigationItem.setLeftBarButtonItems([negativeSpacer, backButton], animated: false)
      }
 
     @objc

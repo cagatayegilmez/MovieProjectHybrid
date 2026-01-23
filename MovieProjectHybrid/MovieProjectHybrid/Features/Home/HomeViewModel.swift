@@ -17,18 +17,22 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     @Published private(set) var searchResults: [MovieListModel] = []
     @Published var queryString: String = "" {
         didSet {
-            searchMovies(query: queryString)
+            scheduleSearch(for: queryString)
         }
     }
-    private var dataController: HomeDataProtocol
+    private let dataController: HomeDataProtocol
     private var currentPage = 1
     private var totalPages = 1
+    private var searchTask: Task<Void, Never>?
+    private let minimumSearchLength = 2
+    private let searchDebounceNanoseconds: UInt64 = 350_000_000
 
     init(dataController: HomeDataProtocol) {
         self.dataController = dataController
     }
 
     deinit {
+        searchTask?.cancel()
         Task { @MainActor in
             await NetworkScheduler.shared.killAllTasks()
         }
@@ -37,28 +41,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     func onAppear() {
         viewState = .loading
         Task {
-            do {
-                try await NetworkScheduler.shared.doQueue { [weak self] in
-                    guard let self else {
-                        return
-                    }
-
-                    async let nowPlaying = self.dataController.fetchNowPlayingList()
-                    async let upcoming = self.dataController.fetchUpcomingList(currentPage)
-                    let (now, up) = try await (nowPlaying, upcoming)
-                    await MainActor.run {
-                        self.viewState = .success
-                        self.nowPlayingMovies = now?.results ?? []
-                        self.upcomingMovies = up?.results ?? []
-                        self.totalPages = up?.total_pages ?? 1
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    viewState = .error(message: message)
-                }
-            }
+            await loadInitialMovies()
         }
     }
 
@@ -68,8 +51,8 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     }
 
     func loadMoreMovies() async {
-        currentPage += 1
-        guard currentPage <= totalPages else {
+        let nextPage = currentPage + 1
+        guard nextPage <= totalPages else {
             await MainActor.run {
                 let message = "End of the list."
                 viewState = .error(message: message)
@@ -77,43 +60,89 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
             return
         }
 
+        currentPage = nextPage
         viewState = .loading
-        Task {
-            do {
-                try await NetworkScheduler.shared.doQueue { [weak self] in
-                    guard let self else {
-                        return
-                    }
+        do {
+            try await NetworkScheduler.shared.doQueue { [weak self] in
+                guard let self else {
+                    return
+                }
 
-                    let response = try await self.dataController.fetchUpcomingList(self.currentPage)
-                    await MainActor.run {
-                        self.viewState = .success
-                        self.upcomingMovies.append(contentsOf: response?.results ?? [])
-                    }
-                }
-            } catch {
+                let response = try await self.dataController.fetchUpcomingList(self.currentPage)
                 await MainActor.run {
-                    let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                    viewState = .error(message: message)
+                    self.viewState = .success
+                    self.upcomingMovies.append(contentsOf: response?.results ?? [])
                 }
+            }
+        } catch {
+            await MainActor.run {
+                let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                viewState = .error(message: message)
             }
         }
     }
 
-    private func searchMovies(query: String) {
-        Task {
-            do {
-                try await NetworkScheduler.shared.doQueue { [weak self] in
-                    guard let self else {
-                        return
-                    }
+    private func loadInitialMovies() async {
+        do {
+            try await NetworkScheduler.shared.doQueue { [weak self] in
+                guard let self else {
+                    return
+                }
 
-                    let response = try await self.dataController.searchInMovies(query, currentPage)
-                    await MainActor.run {
-                        self.searchResults = response?.results ?? []
-                    }
+                async let nowPlaying = self.dataController.fetchNowPlayingList()
+                async let upcoming = self.dataController.fetchUpcomingList(currentPage)
+                let (now, up) = try await (nowPlaying, upcoming)
+                await MainActor.run {
+                    self.viewState = .success
+                    self.nowPlayingMovies = now?.results ?? []
+                    self.upcomingMovies = up?.results ?? []
+                    self.totalPages = up?.total_pages ?? 1
                 }
             }
+        } catch {
+            await MainActor.run {
+                let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                viewState = .error(message: message)
+            }
+        }
+    }
+
+    private func scheduleSearch(for query: String) {
+        searchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= minimumSearchLength else {
+            searchResults = []
+            return
+        }
+
+        searchTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: self?.searchDebounceNanoseconds ?? 0)
+            guard !Task.isCancelled else {
+                return
+            }
+            await self?.performSearch(query: trimmed)
+        }
+    }
+
+    private func performSearch(query: String) async {
+        do {
+            try await NetworkScheduler.shared.doQueue { [weak self] in
+                guard let self else {
+                    return
+                }
+
+                let response = try await self.dataController.searchInMovies(query, 1)
+                await MainActor.run {
+                    self.searchResults = response?.results ?? []
+                }
+            }
+        } catch {
+            await MainActor.run {
+                self.searchResults = []
+            }
+            #if DEBUG
+            print("Search failed: \(error)")
+            #endif
         }
     }
 }

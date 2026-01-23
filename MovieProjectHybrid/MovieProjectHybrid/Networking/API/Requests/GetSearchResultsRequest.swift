@@ -21,9 +21,14 @@ struct GetSearchResultsRequest: APIRequest {
         [
             URLQueryItem(name: "api_key", value: Environment.apiKey),
             URLQueryItem(name: "query", value: query),
-            URLQueryItem(name: "page", value: "\(String(describing: page))")
+            URLQueryItem(name: "page", value: "\(page)")
         ]
     }
-    var query: String!
-    var page: Int!
+    let query: String
+    let page: Int
+
+    init(query: String, page: Int) {
+        self.query = query
+        self.page = page
+    }
 }

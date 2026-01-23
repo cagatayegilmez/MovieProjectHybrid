@@ -9,13 +9,21 @@ import Foundation
 
 final class ServiceLayer {
 
+    private let session: URLSession
+    private let decoder: JSONDecoder
+
+    init(session: URLSession = .shared, decoder: JSONDecoder = JSONDecoder()) {
+        self.session = session
+        self.decoder = decoder
+    }
+
     func send<T: APIRequest>(request: T,
                              canRetry: Bool = true,
                              completion: @escaping (Result<T.Response, Error>) -> Void) {
-        let session = URLSession(configuration: .default)
-        let decoder = JSONDecoder()
-        print(request.asURLRequest())
-        print("⭕️⭕️⭕️⭕️⭕️⭕️⭕️⭕️⭕️⭕️⭕️")
+#if DEBUG
+        print("Request: \(request.asURLRequest())")
+        print("🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀")
+#endif
         let dataTask = session.dataTask(with: request.asURLRequest()) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 guard let self else {
@@ -27,8 +35,10 @@ final class ServiceLayer {
                     return
                 }
 
-                print("//////////////////////////")
-                print("--->\(httpResponse.statusCode)")
+#if DEBUG
+                print("🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢")
+                print("HTTP Status: \(httpResponse.statusCode)")
+#endif
 
                 switch httpResponse.statusCode {
                 case 200..<300:
@@ -37,7 +47,6 @@ final class ServiceLayer {
                         return
                     }
 
-                    print("🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴")
                     guard let dataString = String(data: data, encoding: .utf8), !dataString.isEmpty else {
                         if let emptyResponse = EmptyResponse() as? T.Response {
                             completion(.success(emptyResponse))
@@ -45,26 +54,32 @@ final class ServiceLayer {
                         return
                     }
 
+#if DEBUG
                     print(dataString)
+#endif
                     do {
-                        let baseResponse = try decoder.decode(T.Response.self, from: data)
+                        let baseResponse = try self.decoder.decode(T.Response.self, from: data)
                         completion(.success(baseResponse))
                     } catch {
+#if DEBUG
                         print(response?.url?.absoluteString ?? "Last URL")
                         print("Decoding Error --> \(T.Response.self)")
                         print(error)
+#endif
                         completion(.failure(ServiceError.decoding(error)))
                     }
                 default:
                     guard let data = data,
-                          let errorObject = try? decoder.decode(ServiceErrorObject.self,
-                                                                from: data).errorMessages.first else {
+                          let errorObject = try? self.decoder.decode(ServiceErrorObject.self,
+                                                                     from: data).errorMessages.first else {
                         completion(.failure(ServiceError.fail(httpResponse.statusCode)))
                         return
                     }
 
+#if DEBUG
+                    print("🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴")
                     print(errorObject.message)
-                    print("........")
+#endif
                     completion(.failure(ServiceError.customError(httpCode: httpResponse.statusCode,
                                                                  errorCode: errorObject.code)))
                 }

@@ -21,13 +21,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let window = UIWindow(windowScene: windowScene)
         let factory = DefaultAppScreenFactory()
-        let coorfinator = AppCoordinator(factory: factory)
-        self.appCoordinator = coorfinator
+        let coordinator = AppCoordinator(factory: factory)
+        self.appCoordinator = coordinator
 
-        window.rootViewController = coorfinator.navigationController
+        window.rootViewController = coordinator.navigationController
         window.makeKeyAndVisible()
         self.window = window
 
-        coorfinator.start()
+        coordinator.start()
     }
 }
