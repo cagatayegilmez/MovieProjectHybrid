@@ -131,7 +131,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
                     return
                 }
 
-                let response = try await self.dataController.searchInMovies(query, 1)
+                let response = try await self.dataController.searchInMovies(query, currentPage)
                 await MainActor.run {
                     self.searchResults = response?.results ?? []
                 }
