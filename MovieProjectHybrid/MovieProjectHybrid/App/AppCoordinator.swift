@@ -13,15 +13,15 @@ protocol AppScreenFactory {
     func makeMovieDetail(movieId: Int) -> UIViewController
 }
 
-final class AppCoordinator: NSObject, NavigationCoordinator {
+final class AppCoordinator: NSObject {
     var childCoordinators: [Coordinator] = []
 
-    let navigationController: UINavigationController
+    let navigationController: NavigationController
     private let factory: AppScreenFactory
     private let navBarStyle: (AppRoute) -> NavigationBarStyle
 
     init(
-        navigationController: UINavigationController = UINavigationController(),
+        navigationController: NavigationController = NavigationController(),
         factory: AppScreenFactory,
         navBarStyle: @escaping (AppRoute) -> NavigationBarStyle = { _ in .visible }
     ) {

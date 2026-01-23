@@ -38,14 +38,13 @@ extension UIViewController {
     }
 }
 
-final class NavigationController: UINavigationController, UINavigationControllerDelegate {
+final class NavigationController: UINavigationController {
 
     var isLightMode: Bool = true
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackButton()
-        self.delegate = self
         switch traitCollection.userInterfaceStyle {
         case .light, .unspecified:
             isLightMode = true
@@ -84,22 +83,6 @@ final class NavigationController: UINavigationController, UINavigationController
     func backButtonAction() {
           popViewController(animated: true)
       }
-
-    func checkIsRootVC() -> Bool {
-        topViewController is HomeViewController
-    }
-
-    func navigationController(_ navigationController: UINavigationController,
-                              willShow viewController: UIViewController,
-                              animated: Bool) {
-        guard !checkIsRootVC() else {
-            return
-        }
-
-        if viewControllers.count > 1 {
-            addLeftBackBarButton()
-        }
-    }
 }
 
 extension UIColor {
