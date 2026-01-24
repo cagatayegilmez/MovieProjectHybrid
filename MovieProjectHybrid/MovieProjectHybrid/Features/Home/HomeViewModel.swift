@@ -30,6 +30,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     private var searchTask: Task<Void, Never>?
     private let minimumSearchLength = 2
     private let searchDebounceNanoseconds: UInt64 = 350_000_000
+    private var isLoadingMore = false
 
     init(dataController: HomeDataProtocol) {
         self.dataController = dataController
@@ -55,6 +56,13 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     }
 
     func loadMoreMovies() async {
+        guard !isLoadingMore else {
+            return
+        }
+        isLoadingMore = true
+        defer {
+            isLoadingMore = false
+        }
         let nextPage = currentPage + 1
         guard nextPage <= totalPages else {
             await MainActor.run {
@@ -65,7 +73,6 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
         }
 
         currentPage = nextPage
-        viewState = .loading
         do {
             try await NetworkScheduler.shared.doQueue { [weak self] in
                 guard let self else {

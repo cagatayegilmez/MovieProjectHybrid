@@ -17,6 +17,9 @@ private enum Constant {
 struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
 
     @ObservedObject var viewModel: ViewModel
+    @State private var wholeSize: CGSize = .zero
+    @State private var scrollViewSize: CGSize = .zero
+    private let spaceName = "scroll"
     private var placeholder: Color {
         Color(.systemGray4)
     }
@@ -29,18 +32,48 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
                 EmptyView()
             case .success:
                 SearchView(searchResults: viewModel.searchResults,
-                           queryString: $viewModel.queryString)
-                ScrollView(.vertical, showsIndicators: false) {
-                    CarouselView(movies: viewModel.nowPlayingMovies) { selectedItem in
-                        print(selectedItem.title)
+                           queryString: $viewModel.queryString) { selectedMovie in
+                    // - TODO: Route to movie detail
+                    print(selectedMovie.title ?? Constant.emptyString)
+                }
+                ChildSizeReader(size: $wholeSize) {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        CarouselView(movies: viewModel.nowPlayingMovies) { selectedMovie in
+                            // - TODO: Route to movie detail
+                            print(selectedMovie.title ?? Constant.emptyString)
+                        }
+                        .frame(height: Constant.carouselHeight)
+                        ChildSizeReader(size: $scrollViewSize) {
+                            VStack {
+                                ForEach(viewModel.upcomingMovies, id: \.id) { movie in
+                                    movieListRow(movie: movie)
+                                        .onTapGesture {
+                                            // - TODO: Route to movie detail
+                                            print(movie.title ?? Constant.emptyString)
+                                        }
+                                        .background(
+                                            GeometryReader { proxy in
+                                                Color.clear.preference(
+                                                    key: ViewOffsetKey.self,
+                                                    value: -1 * proxy.frame(in: .named(spaceName)).origin.y
+                                                )
+                                            }
+                                        )
+                                        .onPreferenceChange(ViewOffsetKey.self) { value in
+                                            if value >= scrollViewSize.height - wholeSize.height {
+                                                Task {
+                                                    await viewModel.loadMoreMovies()
+                                                }
+                                            }
+                                        }
+                                }
+                            }
+                        }
                     }
-                    .frame(height: Constant.carouselHeight)
-                    movieList()
-                }
-                .refreshable {
-                    viewModel.refresh()
-                }
-                .onScrollToBottom {
+                    .refreshable {
+                        viewModel.refresh()
+                    }
+                    .coordinateSpace(name: spaceName)
                 }
             case .error(let error):
                 // - TODO: Create error view
@@ -49,17 +82,6 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
         }
         .task {
             viewModel.onAppear()
-        }
-    }
-
-    @ViewBuilder
-    private func movieList() -> some View {
-        VStack {
-            ForEach(viewModel.upcomingMovies, id: \.id) { movie in
-                movieListRow(movie: movie)
-                    .onTapGesture {
-                    }
-            }
         }
     }
 
@@ -81,8 +103,8 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
                     placeholder
                 }
             }
-                                .frame(width: 104, height: 104)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
+            .frame(width: 104, height: 104)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
             VStack(alignment: .leading, spacing: 8) {
                 Text(movie.title ?? Constant.emptyString)
                     .font(.system(size: 15, weight: .bold))

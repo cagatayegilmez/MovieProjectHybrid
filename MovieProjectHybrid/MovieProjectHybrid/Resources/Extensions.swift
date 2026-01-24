@@ -88,33 +88,43 @@ extension Color {
     }
 }
 
-struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
+struct ViewOffsetKey: PreferenceKey {
+    typealias Value = CGFloat
 
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
+    static var defaultValue = CGFloat.zero
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value += nextValue()
     }
 }
 
-extension View {
+struct ChildSizeReader<Content: View>: View {
+    @Binding var size: CGSize
 
-    /// Detects when scroll view scrolled to bottom
-    ///
-    /// - Parameter action: Completion block of scroll bottomed
-    /// - Returns: View of scrolling observed.
-    func onScrollToBottom(_ action: @escaping () -> Void) -> some View {
-        self.background(
-            GeometryReader { geo in
-                Color.clear
-                    .preference(key: ScrollOffsetPreferenceKey.self,
-                                value: geo.frame(in: .global).maxY)
-            }
-        )
-        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { maxY in
-            let screenHeight = UIScreen.main.bounds.height
-            if maxY < screenHeight + 20 {
-                action()
-            }
+    let content: () -> Content
+    var body: some View {
+        ZStack {
+            content().background(
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: SizePreferenceKey.self,
+                        value: proxy.size
+                    )
+                }
+            )
         }
+        .onPreferenceChange(SizePreferenceKey.self) { preferences in
+            self.size = preferences
+        }
+    }
+}
+
+struct SizePreferenceKey: PreferenceKey {
+    typealias Value = CGSize
+
+    static var defaultValue: Value = .zero
+
+    static func reduce(value _: inout Value, nextValue: () -> Value) {
+        _ = nextValue()
     }
 }

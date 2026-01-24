@@ -30,6 +30,7 @@ struct SearchView: View {
 
     let searchResults: [MovieListModel]
     @Binding var queryString: String
+    let onSelect: (MovieListModel) -> Void
 
     var body: some View {
         searchView()
@@ -113,6 +114,9 @@ struct SearchView: View {
                             .foregroundColor(.gray.opacity(0.3))
                     }
                     .padding(.leading, Constant.horizontalSpacer)
+                    .onTapGesture {
+                        onSelect(item)
+                    }
                 }
             }
         }
