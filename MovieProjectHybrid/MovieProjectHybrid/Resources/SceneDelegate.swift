@@ -21,7 +21,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let window = UIWindow(windowScene: windowScene)
         let factory = DefaultAppScreenFactory()
-        let coordinator = AppCoordinator(factory: factory)
+        let navController = UINavigationController()
+        let coordinator = AppCoordinator(navigationController: navController,
+                                         factory: factory) { route in
+            switch route {
+            case .movieList:
+                return .hidden
+            case .movieDetail:
+                return .visible
+            }
+        }
         self.appCoordinator = coordinator
 
         window.rootViewController = coordinator.navigationController

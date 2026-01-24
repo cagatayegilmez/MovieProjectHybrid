@@ -13,10 +13,10 @@ struct MovieModel: Decodable {
     let total_pages: Int
 }
 
-struct MovieListModel: Decodable {
+struct MovieListModel: Decodable, Hashable {
 
     let id: Int?
-    private let backdrop_path: String?
+    let backdrop_path: String?
     let title: String?
     let vote_average: Double?
     let overview: String?

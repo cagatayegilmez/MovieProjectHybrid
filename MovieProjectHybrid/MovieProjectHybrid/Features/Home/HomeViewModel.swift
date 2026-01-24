@@ -17,6 +17,10 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     @Published private(set) var searchResults: [MovieListModel] = []
     @Published var queryString: String = "" {
         didSet {
+            if queryString.isEmpty {
+                searchResults.removeAll()
+                return
+            }
             scheduleSearch(for: queryString)
         }
     }
@@ -133,7 +137,9 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
 
                 let response = try await self.dataController.searchInMovies(query, currentPage)
                 await MainActor.run {
-                    self.searchResults = response?.results ?? []
+                    self.searchResults = response?.results ?? [].filter {
+                        $0.backdrop_path != nil
+                    }
                 }
             }
         } catch {

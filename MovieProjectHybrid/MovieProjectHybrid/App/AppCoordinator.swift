@@ -16,12 +16,12 @@ protocol AppScreenFactory {
 final class AppCoordinator: NSObject {
     var childCoordinators: [Coordinator] = []
 
-    let navigationController: NavigationController
+    let navigationController: UINavigationController
     private let factory: AppScreenFactory
     private let navBarStyle: (AppRoute) -> NavigationBarStyle
 
     init(
-        navigationController: NavigationController = NavigationController(),
+        navigationController: UINavigationController = UINavigationController(),
         factory: AppScreenFactory,
         navBarStyle: @escaping (AppRoute) -> NavigationBarStyle = { _ in .visible }
     ) {

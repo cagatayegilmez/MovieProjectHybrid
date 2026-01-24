@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol HomeViewModelProtocol: ObservableObject {
+protocol HomeViewModelProtocol: ObservableObject, Hashable {
 
     /// State of screen
     var viewState: ViewState { get }

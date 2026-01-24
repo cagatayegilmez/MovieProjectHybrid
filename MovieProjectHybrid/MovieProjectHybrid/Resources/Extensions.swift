@@ -38,62 +38,6 @@ extension UIViewController {
     }
 }
 
-final class NavigationController: UINavigationController {
-
-    var isLightMode: Bool = true
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        updateAppearance(for: traitCollection)
-    }
-
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        updateAppearance(for: traitCollection)
-    }
-
-    private func updateAppearance(for traitCollection: UITraitCollection) {
-        switch traitCollection.userInterfaceStyle {
-        case .light, .unspecified:
-            isLightMode = true
-        case .dark:
-            isLightMode = false
-        @unknown default:
-            isLightMode = true
-        }
-        setupBackButton()
-    }
-
-    private func setupBackButton() {
-        navigationBar.tintColor = isLightMode ? .black : .white
-        navigationBar.backItem?.title = ""
-        navigationBar.topItem?.title = " "
-        navigationBar.isTranslucent = true
-        navigationBar.backgroundColor = isLightMode ? .white : .black
-        navigationBar.shadowImage = UIImage()
-        navigationBar.largeTitleTextAttributes = [.foregroundColor: isLightMode ? UIColor.black : UIColor.white]
-        navigationBar.titleTextAttributes = [
-            .foregroundColor: UIColor(hex: "#2B2D42"),
-            .font: UIFont.systemFont(ofSize: 15)
-        ]
-    }
-
-    func addLeftBackBarButton() {
-        let negativeSpacer = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: nil, action: nil)
-        negativeSpacer.width = -5
-        let backButton = UIBarButtonItem(image: #imageLiteral(resourceName: "back"),
-                                         style: .plain,
-                                         target: self,
-                                         action: #selector(backButtonAction))
-        topViewController?.navigationItem.setLeftBarButtonItems([negativeSpacer, backButton], animated: false)
-     }
-
-    @objc
-    func backButtonAction() {
-          popViewController(animated: true)
-      }
-}
-
 extension UIColor {
 
     /// Inits UIColor with hex value
