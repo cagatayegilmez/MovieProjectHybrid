@@ -137,7 +137,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
 
                 let response = try await self.dataController.searchInMovies(query, currentPage)
                 await MainActor.run {
-                    self.searchResults = response?.results ?? [].filter {
+                    self.searchResults = (response?.results ?? []).filter {
                         $0.backdrop_path != nil
                     }
                 }

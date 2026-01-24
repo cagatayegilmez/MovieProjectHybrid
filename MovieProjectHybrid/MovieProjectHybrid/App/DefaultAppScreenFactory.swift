@@ -14,7 +14,7 @@ final class DefaultAppScreenFactory: AppScreenFactory {
         let viewModel = HomeViewModel(dataController: dataController)
         let view = HomeView(viewModel: viewModel)
         let viewController = HomeViewController(viewModel: viewModel)
-        viewController.addSwiftUIContentView(view)
+        viewController.addSwiftUIView(view)
         return viewController
     }
 

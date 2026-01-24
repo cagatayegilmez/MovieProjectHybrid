@@ -11,17 +11,14 @@ import UIKit
 extension UIViewController {
 
     @discardableResult
-    func addSwiftUIContentView<T: View>(_ contentView: T, isTransparent: Bool = false) -> UIView? {
-        let hostingViewController = UIHostingController(rootView: contentView)
+    func addSwiftUIView<T: View>(_ swiftUIView: T) -> UIView? {
+        let hostingViewController = UIHostingController(rootView: swiftUIView)
         guard let rootView = hostingViewController.view else {
             return nil
         }
 
         rootView.translatesAutoresizingMaskIntoConstraints = false
-        if isTransparent {
-            rootView.isOpaque = false
-            rootView.backgroundColor = .clear
-        }
+        rootView.backgroundColor = .systemBackground
 
         view.addSubview(rootView)
         NSLayoutConstraint.activate([
@@ -65,6 +62,59 @@ extension UIColor {
             self.init(red: r, green: g, blue: b, alpha: 1.0)
         } else {
             self.init(white: 0.5, alpha: 1)
+        }
+    }
+}
+
+extension Color {
+
+    /// Inits Color with hex value
+    ///
+    /// - Parameter hex: Hex value of color
+    init(hex: String) {
+        var cString = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if cString.hasPrefix("#") { cString.removeFirst() }
+        guard cString.count == 6 else {
+            self = Color(.systemGray)
+            return
+        }
+        var rgbValue: UInt64 = 0
+        Scanner(string: cString).scanHexInt64(&rgbValue)
+        self = Color(
+            red: Double((rgbValue & 0xFF0000) >> 16) / 255.0,
+            green: Double((rgbValue & 0x00FF00) >> 8) / 255.0,
+            blue: Double(rgbValue & 0x0000FF) / 255.0
+        )
+    }
+}
+
+struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+extension View {
+
+    /// Detects when scroll view scrolled to bottom
+    ///
+    /// - Parameter action: Completion block of scroll bottomed
+    /// - Returns: View of scrolling observed.
+    func onScrollToBottom(_ action: @escaping () -> Void) -> some View {
+        self.background(
+            GeometryReader { geo in
+                Color.clear
+                    .preference(key: ScrollOffsetPreferenceKey.self,
+                                value: geo.frame(in: .global).maxY)
+            }
+        )
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { maxY in
+            let screenHeight = UIScreen.main.bounds.height
+            if maxY < screenHeight + 20 {
+                action()
+            }
         }
     }
 }

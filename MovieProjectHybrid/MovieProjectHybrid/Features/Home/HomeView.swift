@@ -9,24 +9,17 @@ import SwiftUI
 
 private enum Constant {
 
-    /// Body constants
-    static let searchAreaSpacing: CGFloat = 8
-    static let searchAreaHeight: CGFloat = 24
-    static let clearButtonTrailing: CGFloat = 20
-    static let completeViewHeight: CGFloat = 35
-    static let cornerRadius: CGFloat = 12
-    static let inputSpace: CGFloat = 12
-    static let searchIconSize = CGSize(width: 24, height: 24)
-    static let visibleOpacity: Double = 1.0
     static let emptyString = ""
-    static let clearIconSize = CGSize(width: 18, height: 18)
-    static let placeholderText = "Search movies..."
-    static let animationDuration = TimeInterval(0.18)
+    /// 16:9 static frame
+    static let carouselHeight: CGFloat = UIScreen.main.bounds.width / 1.77
 }
 
 struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
 
     @ObservedObject var viewModel: ViewModel
+    private var placeholder: Color {
+        Color(.systemGray4)
+    }
 
     var body: some View {
         VStack {
@@ -35,12 +28,20 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
                 // - TODO: Create loading view
                 EmptyView()
             case .success:
-                searchView()
-                if !viewModel.searchResults.isEmpty {
-                    listView()
-                        .frame(maxHeight: 250)
+                SearchView(searchResults: viewModel.searchResults,
+                           queryString: $viewModel.queryString)
+                ScrollView(.vertical, showsIndicators: false) {
+                    CarouselView(movies: viewModel.nowPlayingMovies) { selectedItem in
+                        print(selectedItem.title)
+                    }
+                    .frame(height: Constant.carouselHeight)
+                    movieList()
                 }
-                Spacer()
+                .refreshable {
+                    viewModel.refresh()
+                }
+                .onScrollToBottom {
+                }
             case .error(let error):
                 // - TODO: Create error view
                 EmptyView()
@@ -52,87 +53,59 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
     }
 
     @ViewBuilder
-    private func searchView() -> some View {
-        HStack(spacing: Constant.searchAreaSpacing) {
-            Spacer(minLength: 15)
-            Image(.searchIcon)
-                .resizable()
-                .frame(width: Constant.searchIconSize.width,
-                       height: Constant.searchIconSize.height)
-                .aspectRatio(contentMode: .fill)
-            ZStack(alignment: .leading) {
-                Text(Constant.placeholderText)
-                    .font(Font.system(size: 15))
-                    .foregroundColor(.secondary)
-                    .opacity(!viewModel.queryString.isEmpty
-                             ? .zero
-                             : Constant.visibleOpacity)
-                    .allowsHitTesting(false)
-                TextField(Constant.emptyString, text: $viewModel.queryString)
-                    .font(Font.system(size: 15))
-                    .foregroundColor(.primary)
-                    .disableAutocorrection(true)
-            }
-            .frame(height: Constant.searchAreaHeight)
-            if !viewModel.queryString.isEmpty {
-                Button(action: clearAction) {
-                    Image(.closeButton)
-                        .frame(width: Constant.clearIconSize.width,
-                               height: Constant.clearIconSize.height)
-                }
-                .padding(.trailing, Constant.clearButtonTrailing)
+    private func movieList() -> some View {
+        VStack {
+            ForEach(viewModel.upcomingMovies, id: \.id) { movie in
+                movieListRow(movie: movie)
+                    .onTapGesture {
+                    }
             }
         }
-        .frame(height: Constant.completeViewHeight)
-        .background(Color(uiColor: .systemBackground))
-        .cornerRadius(Constant.cornerRadius)
-        .overlay(
-            RoundedRectangle(cornerRadius: Constant.cornerRadius)
-                .stroke(Color.secondary)
-        )
-        .padding(.horizontal, Constant.inputSpace)
     }
 
     @ViewBuilder
-    private func listView() -> some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                ForEach(viewModel.searchResults, id: \.self) { item in
-                    VStack(alignment: .leading) {
-                        HStack(alignment: .center, spacing: 15) {
-                            let url = URL(string: item.imageUrl ?? Constant.emptyString)
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 100, height: 60)
-                                case .empty, .failure:
-                                    EmptyView()
-                                @unknown default:
-                                    EmptyView()
-                                }
-                            }
-                            Text(item.title ?? Constant.emptyString)
-                                .font(.headline)
-                                .foregroundColor(.primary)
-                        }
-                        .padding(.trailing, 15)
-                        Rectangle()
-                            .frame(height: 1)
-                            .foregroundColor(.gray.opacity(0.3))
-                    }
-                    .padding(.leading, 15)
+    private func movieListRow(movie: MovieListModel) -> some View {
+        HStack(spacing: 12) {
+            AsyncImage(url: URL(string: movie.imageUrl
+                                ?? Constant.emptyString)) { phase in
+                switch phase {
+                case .empty:
+                    placeholder
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    placeholder
+                @unknown default:
+                    placeholder
                 }
             }
+                                .frame(width: 104, height: 104)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+            VStack(alignment: .leading, spacing: 8) {
+                Text(movie.title ?? Constant.emptyString)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Color(hex: "#2B2D42"))
+                Text(movie.overview ?? Constant.emptyString)
+                    .font(.system(size: 13))
+                    .foregroundColor(Color(hex: "#8D99AE"))
+                    .lineLimit(4)
+                HStack {
+                    Spacer()
+                    let dateString = String(Calendar.current.component(.year, from: movie.releaseDate))
+                    Text(dateString)
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(hex: "#8D99AE"))
+                }
+            }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color(hex: "#8D99AE"))
+                .padding(.trailing, 6)
         }
-        .background(Color(uiColor: .systemBackground))
-    }
-
-    private func clearAction() {
-        withAnimation(.easeOut(duration: Constant.animationDuration)) {
-            viewModel.queryString = Constant.emptyString
-        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background(Color.white)
     }
 }
