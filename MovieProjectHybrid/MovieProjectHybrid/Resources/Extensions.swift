@@ -67,7 +67,7 @@ extension UIViewController: SwiftUILoaderProtocol {
     }
 
     func hideLoading() {
-        loadingView.hide(animated: true)
+        loadingView.hide()
     }
 
     func toggleLoading(isLoading: Bool) {

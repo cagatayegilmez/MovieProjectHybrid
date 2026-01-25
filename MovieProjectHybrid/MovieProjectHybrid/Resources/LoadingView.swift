@@ -8,18 +8,12 @@
 import Lottie
 import UIKit
 
-private enum Constant {
-
-    static let animationName = "loading"
-    static let animationViewSize = CGSize(width: 100, height: 100)
-}
-
 final class LoadingView: UIView {
 
     var isActive = false
 
     private let animationView: LottieAnimationView = {
-        let animationView = LottieAnimationView(name: Constant.animationName)
+        let animationView = LottieAnimationView(name: "loading")
         animationView.translatesAutoresizingMaskIntoConstraints = false
         animationView.loopMode = .loop
         return animationView
@@ -52,34 +46,29 @@ final class LoadingView: UIView {
 
             layoutIfNeeded()
 
-            UIView.animate(
-                withDuration: 0.3,
-                animations: {
-                    self.alpha = 1.0
-                },
-                completion: { _ in
-                    self.animationView.play()
-                })
+            UIView.animate(withDuration: 0.3, animations: {
+                self.alpha = 1.0
+            },
+            completion: { _ in
+                self.animationView.play()
+            })
         }
     }
 
-    func hide(animated: Bool) {
+    func hide() {
         if superview == nil {
             return
         }
 
         isActive = false
 
-        let animationDuration = animated ? 0.3 : 0.0
-        UIView.animate(
-            withDuration: animationDuration,
-            animations: {
-                self.alpha = 0.0
-            },
-            completion: { _ in
-                self.animationView.stop()
-                self.removeFromSuperview()
-            })
+        UIView.animate(withDuration: 0.3, animations: {
+            self.alpha = 0.0
+        },
+        completion: { _ in
+            self.animationView.stop()
+            self.removeFromSuperview()
+        })
     }
 
     private func reset() {
@@ -92,15 +81,12 @@ final class LoadingView: UIView {
     private func setup() {
         translatesAutoresizingMaskIntoConstraints = false
         backgroundColor = UIColor.systemGray.withAlphaComponent(0.3)
-
         addSubview(animationView)
         NSLayoutConstraint.activate([
-            animationView.widthAnchor.constraint(
-                equalToConstant: Constant.animationViewSize.width),
-            animationView.heightAnchor.constraint(
-                equalToConstant: Constant.animationViewSize.height),
             animationView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            animationView.centerYAnchor.constraint(equalTo: centerYAnchor)
+            animationView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            animationView.widthAnchor.constraint(equalToConstant: 100),
+            animationView.heightAnchor.constraint(equalToConstant: 100)
         ])
         reset()
     }
