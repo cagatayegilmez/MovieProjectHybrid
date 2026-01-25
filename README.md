@@ -6,7 +6,7 @@
 
 # MOVIEPROJECTHYBRID
 
-<em>Transforming Movie Experiences Through Seamless Innovation</em>
+<em>SwiftUI + UIKit & Combine + Concurrency Hybrid Project</em>
 
 <!-- BADGES -->
 <img src="https://img.shields.io/github/license/cagatayegilmez/MovieProjectHybrid?style=flat&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
