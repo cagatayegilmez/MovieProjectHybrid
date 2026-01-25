@@ -17,6 +17,7 @@ private enum Constant {
 struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
 
     @ObservedObject var viewModel: ViewModel
+    weak var loader: SwiftUILoaderProtocol?
     @State private var wholeSize: CGSize = .zero
     @State private var scrollViewSize: CGSize = .zero
     private let spaceName = "scroll"
@@ -27,9 +28,6 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
     var body: some View {
         VStack {
             switch viewModel.viewState {
-            case .loading:
-                // - TODO: Create loading view
-                EmptyView()
             case .success:
                 SearchView(searchResults: viewModel.searchResults,
                            queryString: $viewModel.queryString) { selectedMovie in
@@ -82,6 +80,9 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
         }
         .task {
             viewModel.onAppear()
+        }
+        .onChange(of: viewModel.isLoading) {
+            loader?.toggleLoading(isLoading: $0)
         }
     }
 

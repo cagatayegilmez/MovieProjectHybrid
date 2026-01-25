@@ -9,6 +9,9 @@ import Foundation
 
 protocol HomeViewModelProtocol: ObservableObject, Hashable {
 
+    /// State of loader
+    var isLoading: Bool { get }
+
     /// State of screen
     var viewState: ViewState { get }
 

@@ -8,7 +8,33 @@
 import SwiftUI
 import UIKit
 
-extension UIViewController {
+private var loadingViewKey: UInt8 = 0
+
+protocol SwiftUILoaderProtocol: AnyObject {
+
+    func toggleLoading(isLoading: Bool)
+}
+
+extension UIViewController: SwiftUILoaderProtocol {
+
+    private var loadingView: LoadingView {
+        if let view = objc_getAssociatedObject(self, &loadingViewKey) as? LoadingView {
+            return view
+        }
+
+        let view = LoadingView()
+        view.frame = self.view.bounds
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+        objc_setAssociatedObject(
+            self,
+            &loadingViewKey,
+            view,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC
+        )
+
+        return view
+    }
 
     @discardableResult
     func addSwiftUIView<T: View>(_ swiftUIView: T) -> UIView? {
@@ -32,6 +58,25 @@ extension UIViewController {
         hostingViewController.didMove(toParent: self)
 
         return rootView
+    }
+
+    func showLoading() {
+        if let window = UIApplication.shared.keyWindow {
+            loadingView.show(in: window)
+        }
+    }
+
+    func hideLoading() {
+        loadingView.hide(animated: true)
+    }
+
+    func toggleLoading(isLoading: Bool) {
+        switch isLoading {
+        case true:
+            showLoading()
+        case false:
+            hideLoading()
+        }
     }
 }
 

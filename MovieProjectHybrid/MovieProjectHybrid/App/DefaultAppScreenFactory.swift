@@ -12,8 +12,8 @@ final class DefaultAppScreenFactory: AppScreenFactory {
     func makeMovieList() -> UIViewController {
         let dataController = HomeDataController()
         let viewModel = HomeViewModel(dataController: dataController)
-        let view = HomeView(viewModel: viewModel)
         let viewController = HomeViewController(viewModel: viewModel)
+        let view = HomeView(viewModel: viewModel, loader: viewController)
         viewController.addSwiftUIView(view)
         return viewController
     }

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		52BE94D12F26159E009C2772 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 52BE94D02F26159E009C2772 /* Lottie */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		520C98962F1E8C520067FDEF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -55,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52BE94D12F26159E009C2772 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,6 +119,7 @@
 			);
 			name = MovieProjectHybrid;
 			packageProductDependencies = (
+				52BE94D02F26159E009C2772 /* Lottie */,
 			);
 			productName = MovieProjectHybrid;
 			productReference = 520C987F2F1E8C510067FDEF /* MovieProjectHybrid.app */;
@@ -191,6 +197,9 @@
 			);
 			mainGroup = 520C98762F1E8C510067FDEF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				52BE94CF2F26159E009C2772 /* XCRemoteSwiftPackageReference "lottie-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 520C98802F1E8C510067FDEF /* Products */;
 			projectDirPath = "";
@@ -613,6 +622,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		52BE94CF2F26159E009C2772 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = exactVersion;
+				version = 4.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		52BE94D02F26159E009C2772 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52BE94CF2F26159E009C2772 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 520C98772F1E8C510067FDEF /* Project object */;
 }

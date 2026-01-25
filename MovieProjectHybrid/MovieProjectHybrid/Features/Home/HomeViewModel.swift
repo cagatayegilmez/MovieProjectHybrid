@@ -11,7 +11,8 @@ import Foundation
 @MainActor
 final class HomeViewModel: NSObject, HomeViewModelProtocol {
 
-    @Published private(set) var viewState: ViewState = .loading
+    @Published var isLoading = false
+    @Published private(set) var viewState: ViewState = .error(message: "")
     @Published private(set) var nowPlayingMovies: [MovieListModel] = []
     @Published private(set) var upcomingMovies: [MovieListModel] = []
     @Published private(set) var searchResults: [MovieListModel] = []
@@ -44,7 +45,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     }
 
     func onAppear() {
-        viewState = .loading
+        isLoading = true
         Task {
             await loadInitialMovies()
         }
@@ -104,6 +105,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
                 async let upcoming = self.dataController.fetchUpcomingList(currentPage)
                 let (now, up) = try await (nowPlaying, upcoming)
                 await MainActor.run {
+                    self.isLoading = false
                     self.viewState = .success
                     self.nowPlayingMovies = now?.results ?? []
                     self.upcomingMovies = up?.results ?? []
@@ -112,6 +114,7 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
             }
         } catch {
             await MainActor.run {
+                isLoading = false
                 let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 viewState = .error(message: message)
             }
