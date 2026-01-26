@@ -35,4 +35,7 @@ protocol HomeViewModelProtocol: ObservableObject, Hashable {
 
     /// The method which triggers when screen scrolled down (pagination)
     func loadMoreMovies() async
+
+    /// The method for routing movie detail screen
+    func routeToMovieDetail(_ movie: MovieListModel)
 }

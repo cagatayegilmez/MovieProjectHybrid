@@ -31,14 +31,13 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
             case .success:
                 SearchView(searchResults: viewModel.searchResults,
                            queryString: $viewModel.queryString) { selectedMovie in
-                    // - TODO: Route to movie detail
+                    viewModel.routeToMovieDetail(selectedMovie)
                     print(selectedMovie.title ?? Constant.emptyString)
                 }
                 ChildSizeReader(size: $wholeSize) {
                     ScrollView(.vertical, showsIndicators: false) {
                         CarouselView(movies: viewModel.nowPlayingMovies) { selectedMovie in
-                            // - TODO: Route to movie detail
-                            print(selectedMovie.title ?? Constant.emptyString)
+                            viewModel.routeToMovieDetail(selectedMovie)
                         }
                         .frame(height: Constant.carouselHeight)
                         ChildSizeReader(size: $scrollViewSize) {
@@ -46,8 +45,7 @@ struct HomeView<ViewModel>: View where ViewModel: HomeViewModelProtocol {
                                 ForEach(viewModel.upcomingMovies, id: \.id) { movie in
                                     movieListRow(movie: movie)
                                         .onTapGesture {
-                                            // - TODO: Route to movie detail
-                                            print(movie.title ?? Constant.emptyString)
+                                            viewModel.routeToMovieDetail(movie)
                                         }
                                         .background(
                                             GeometryReader { proxy in

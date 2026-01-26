@@ -31,6 +31,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 return .visible
             }
         }
+        factory.navigate = { [weak coordinator] route in
+            coordinator?.show(route: route)
+        }
         self.appCoordinator = coordinator
 
         window.rootViewController = coordinator.navigationController

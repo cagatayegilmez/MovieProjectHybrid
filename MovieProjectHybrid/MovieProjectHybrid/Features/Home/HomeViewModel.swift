@@ -32,9 +32,12 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
     private let minimumSearchLength = 2
     private let searchDebounceNanoseconds: UInt64 = 350_000_000
     private var isLoadingMore = false
+    private let onNavigateToMovieDetail: (_ movieId: Int, _ title: String) -> Void
 
-    init(dataController: HomeDataProtocol) {
+    init(dataController: HomeDataProtocol,
+         onNavigateToMovieDetail: @escaping (_ movieId: Int, _ title: String) -> Void) {
         self.dataController = dataController
+        self.onNavigateToMovieDetail = onNavigateToMovieDetail
     }
 
     deinit {
@@ -92,6 +95,11 @@ final class HomeViewModel: NSObject, HomeViewModelProtocol {
                 viewState = .error(message: message)
             }
         }
+    }
+
+    func routeToMovieDetail(_ movie: MovieListModel) {
+        onNavigateToMovieDetail(movie.id ?? .zero,
+                                movie.title ?? "")
     }
 
     private func loadInitialMovies() async {

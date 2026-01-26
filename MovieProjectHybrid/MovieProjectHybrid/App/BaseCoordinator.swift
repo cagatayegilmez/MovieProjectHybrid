@@ -25,10 +25,13 @@ enum AppRoute: Equatable {
 
     /// Main screen, movie list.
     case movieList
+
     /// Movie detail screen
     ///
-    ///  - Parameter movieId: Int id of movie for fetching details
-    case movieDetail(movieId: Int)
+    ///  - Parameters:
+    ///   - movieId: Int id of movie for fetching details
+    ///   - title: String title of movie for informing on navigation bar
+    case movieDetail(movieId: Int, title: String)
 }
 
 enum NavigationBarStyle: Equatable {

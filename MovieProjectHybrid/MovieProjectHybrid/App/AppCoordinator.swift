@@ -10,7 +10,7 @@ import UIKit
 protocol AppScreenFactory {
 
     func makeMovieList() -> UIViewController
-    func makeMovieDetail(movieId: Int) -> UIViewController
+    func makeMovieDetail(movieId: Int, movieTitle: String) -> UIViewController
 }
 
 final class AppCoordinator: NSObject {
@@ -54,8 +54,9 @@ final class AppCoordinator: NSObject {
         switch route {
         case .movieList:
             return factory.makeMovieList().tagged(route)
-        case .movieDetail(let movieId):
-            return factory.makeMovieDetail(movieId: movieId).tagged(route)
+        case .movieDetail(let movieId, let title):
+            return factory.makeMovieDetail(movieId: movieId,
+                                           movieTitle: title).tagged(route)
         }
     }
 
