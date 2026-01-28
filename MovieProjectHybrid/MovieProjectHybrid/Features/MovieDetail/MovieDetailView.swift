@@ -10,8 +10,6 @@ import SwiftUI
 private enum Constant {
 
     static let emptyString = ""
-    /// 16:9 static frame
-    static let carouselHeight: CGFloat = UIScreen.main.bounds.width / 1.77
 }
 
 struct MovieDetailView<ViewModel>: View where ViewModel: MovieDetailViewModelProtocol {
@@ -21,6 +19,17 @@ struct MovieDetailView<ViewModel>: View where ViewModel: MovieDetailViewModelPro
 
     var body: some View {
         VStack {
+            switch viewModel.viewState {
+            case .success:
+                if let movieDetail = viewModel.movieDetail {
+                    ParallaxView(movieDetail: movieDetail)
+                } else {
+                    EmptyView()
+                }
+            case .error(message: let error):
+                // - TODO: Create error view
+                EmptyView()
+            }
         }
         .task {
             viewModel.onAppear()
